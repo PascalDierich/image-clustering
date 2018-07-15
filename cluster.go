@@ -5,13 +5,9 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-func clusterImage(k int, img image.Image) image.Image {
+func clusterImage(k int, img image.Image) image.Image{
 	cls := getClusters(k, img)
-
-	// assign each cluster a random color
-	for _, c := range cls {
-		c.centroid = colorful.WarmColor() // save color in centroid
-	}
+	assignColors(cls)
 
 	// create new image
 	newImg := image.NewRGBA(img.Bounds())
@@ -21,4 +17,12 @@ func clusterImage(k int, img image.Image) image.Image {
 		}
 	}
 	return newImg
+}
+
+// assign each cluster a random color
+func assignColors(cls []*cluster) {
+	pal := colorful.FastWarmPalette(len(cls))
+	for i, c := range cls {
+		c.centroid = pal[i]
+	}
 }
