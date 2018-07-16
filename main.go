@@ -35,6 +35,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	img := clusterImage(*k, imgData)
+
 	cImg, err := os.Create(*outPath)
 	if err != nil {
 		log.Fatal(err)
@@ -42,6 +44,5 @@ func main() {
 	defer cImg.Close()
 	defer cImg.Seek(0, 0)
 
-	img := clusterImage(*k, imgData)
 	png.Encode(cImg, img)
 }

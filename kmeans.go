@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"math"
 	"math/rand"
+	"sync"
 )
 
 type cluster struct {
@@ -37,14 +38,23 @@ func getClusters(k int, set image.Image) []*cluster {
 }
 
 func partition(clr []*cluster, set image.Image) {
+	var w sync.WaitGroup
+	w.Add(set.Bounds().Max.Y * set.Bounds().Max.X)
+	var mtx sync.Mutex
+
 	// assign all data points to the nearest cluster
 	for y := set.Bounds().Min.Y; y < set.Bounds().Max.Y; y++ {
 		for x := set.Bounds().Min.X; x < set.Bounds().Max.X; x++ {
-			v := set.At(x, y)
-			i := indexNewCentroid(clr, v)
-			clr[i].members = append(clr[i].members, image.Pt(x, y))
+			go func(x, y int) {
+				i := indexNewCentroid(clr, set.At(x, y))
+				mtx.Lock()
+				clr[i].members = append(clr[i].members, image.Pt(x, y)) // with go
+				mtx.Unlock()
+				w.Done()
+			}(x, y)
 		}
 	}
+	w.Wait()
 
 	var getAverage = func(pts []image.Point) color.Color {
 		lPts := len(pts)
@@ -63,7 +73,7 @@ func partition(clr []*cluster, set image.Image) {
 		i := uint8(rSum / uint32(lPts))
 		j := uint8(gSum / uint32(lPts))
 		k := uint8(bSum / uint32(lPts))
-		return color.RGBA{R: i, G: j, B: k, A: 0}
+		return color.RGBA{R: i, G: j, B: k, A: 100}
 	}
 
 	// update each centroid per cluster
@@ -94,9 +104,8 @@ func indexNewCentroid(clr []*cluster, p color.Color) (idx int) {
 	min := uint32(math.MaxUint32)
 
 	for i, c := range clr {
-		cl := c.centroid
 		// find cluster with lowest color-distance
-		d := euclidDis(cl, p)
+		d := euclidDis(c.centroid, p)
 		if d < min {
 			min = d
 			idx = i
