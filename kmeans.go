@@ -44,15 +44,15 @@ func partition(clr []*cluster, set image.Image) {
 
 	// assign all data points to the nearest cluster
 	for y := set.Bounds().Min.Y; y < set.Bounds().Max.Y; y++ {
-		for x := set.Bounds().Min.X; x < set.Bounds().Max.X; x++ {
-			go func(x, y int) {
+		go func(y int) {
+			for x := set.Bounds().Min.X; x < set.Bounds().Max.X; x++ {
 				i := indexNewCentroid(clr, set.At(x, y))
 				mtx.Lock()
-				clr[i].members = append(clr[i].members, image.Pt(x, y)) // with go
+				clr[i].members = append(clr[i].members, image.Pt(x, y))
 				mtx.Unlock()
 				w.Done()
-			}(x, y)
-		}
+			}
+		}(y)
 	}
 	w.Wait()
 
