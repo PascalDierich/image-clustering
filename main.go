@@ -1,8 +1,13 @@
+// Image-Clustering is a cli tool to partition pixels in an image
+// based on their color to a pre-defined number of clusters using
+// the k-means algorithm.
+//
 package main
 
 import (
 	"flag"
 	"fmt"
+	"image"
 	"image/png"
 	"log"
 	"os"
@@ -30,10 +35,16 @@ func main() {
 	defer imgFile.Close()
 	defer imgFile.Seek(0, 0)
 
-	imgData, err := png.Decode(imgFile)
+	imgData, f, err := image.Decode(imgFile)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Print(f)
+
+	//imgData, err := png.Decode(imgFile)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	img := clusterImage(*k, imgData)
 
