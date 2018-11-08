@@ -1,6 +1,6 @@
 # Image-Clustering
 
-```$ go get github.com/pascaldierich/image-clustering```
+```$ go get go.pascaldierich.com/image-clustering```
 
 The _image-clustering_ program partitions the pixels in an image
 based on their color to a pre-defined number of clusters.
